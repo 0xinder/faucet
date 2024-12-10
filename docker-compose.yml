@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  django:
+    build:
+      context: ./django
+      dockerfile: dockerfile
+    container_name: django_app
+    environment:
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - TREASURY_PUBLIC_KEY=${TREASURY_PUBLIC_KEY}
+      - TREASURY_PRIVATE_KEY=${TREASURY_PRIVATE_KEY}
+      - ETH_RPC=${ETH_RPC}
+      - REDIS_HOST=redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    volumes:
+      - ./Django:/app
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: dockerfile
+    container_name: worker_app
+    environment:
+      - TREASURY_PUBLIC_KEY=${TREASURY_PUBLIC_KEY}
+      - TREASURY_PRIVATE_KEY=${TREASURY_PRIVATE_KEY}
+      - ETH_RPC=${ETH_RPC}
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    volumes:
+      - ./worker:/app
+
+  redis:
+    image: redis:6
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
